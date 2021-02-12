@@ -1,5 +1,3 @@
-tensorflow-hub
-tensorflow-text
 scikit-learn
 numpy
 flask
