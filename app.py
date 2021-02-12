@@ -22,6 +22,7 @@ def template_test():
         return render_template('index.html',
                                list_books=list_books,
                                book_selected=selected_book,
+                               selected_metric=selected_metric,
                                similar_books=similar_books[:6])
     else:
         return render_template('index.html', list_books=list_books)

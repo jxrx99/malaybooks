@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Recommendation de livres</title>
+    <title>Malay Book Recommendations</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -14,27 +14,28 @@
             <div class="col-6">
                 <form method="post">
                     <div class="form-group">
-                        <label for="sel2">Choisir une métrique:</label>
+                        <label for="sel2">Type of metrics:</label>
                         <select class="form-control" id="sel2" name="selected_metric">
-                            <option>cosine</option>
-                            <option>euclidean</option>
+                            <option {% if selected_metric == "cosine" %} selected {% endif %}>cosine</option>
+                            <option {% if selected_metric == "euclidean" %} selected {% endif %}>euclidean</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="sel1">Choisir un livre:</label>
+                        <label for="sel1">Select book:</label>
                         <select class="form-control" id="sel1" name="selected_title">
                             {% for title in list_books %}
-                            <option>{{ title }}</option>
+                            <option {% if book_selected.title == title %} selected {% endif %}>{{ title }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <input type="submit" class="btn btn-light" value="Recommender"/>
+                    <input type="submit" class="btn btn-light" value="Recommend"/>
                 </form>
             </div>
             <div class="col-6">
                 {% if book_selected is defined %}
-                <h2>Livre choisi:</h2>
+                <h2>Selected book:</h2>
                 <img src="{{ book_selected.image }}">
+                <p>{{ book_selected.title }}</p>
                 {% endif %}
             </div>
         </div>
@@ -44,6 +45,7 @@
             {% for book in similar_books %}
             <div class="col-2 p-3 d-flex justify-content-center">
                 <img src="{{ book.image }}">
+                <p>{{ book.title }}</p>
             </div>
             {% endfor %}
         </div>
