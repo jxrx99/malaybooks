@@ -113,7 +113,7 @@ def get_links_in_page(category_list, full_data):
             titles.append(book['title'])
             book_data_no_duplicates.append(book)
             
-    full_date = book_data_no_duplicates
+    full_data = book_data_no_duplicates
 
     embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder-multilingual/3")
 

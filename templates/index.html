@@ -24,7 +24,7 @@
                         <label for="sel1">Select book:</label>
                         <select class="form-control" id="sel1" name="selected_title">
                             {% for title in list_books %}
-                            <option {% if book_selected.title == title %} selected {% endif %}>{{ title }}</option>
+                            <option {% if book_selected is defined and book_selected.title == title %} selected {% endif %}>{{ title }}</option>
                             {% endfor %}
                         </select>
                     </div>
