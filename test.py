@@ -1,23 +1,30 @@
-# https://github.com/yangobeil/book-recommendation
-# https://medium.com/swlh/how-simple-is-it-to-build-an-end-to-end-item-based-recommender-system-90f6d959e7c2
 import time
 import requests
-from bs4 import BeautifulSoup
+import tensorflow_hub as hub
+import tensorflow_text
+import numpy as np
 
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-# url = 'https://www.bookurve.com/book/9789672328001/di-situ-langit-dijunjung/'
-# url = 'https://www.bookxcessonline.com/collections/malay-workbooks/products/kunci-a-tahun-6-9789674555542'
-
 def get_soup(url):
+    """ Loads a dynamic page through selenium and get Beautiful soup to get the page source.
+
+    Args:
+        url (string): url of page to be scrapped
+
+    Returns:
+        BeautifulSoup: page source of the url being loaded
+    """
     # Instantiate an Options object
     # and add the “ — headless” argument
     opts = Options()
     opts.add_argument('--headless')
 
     # Set the location of the webdriver
-    path = r'/Users/jufri/Google Drive/ML_project/MalayBooks/chromedriver'    
+    path = r'./chromedriver'    
     
     # Instantiate a webdriver
     driver = webdriver.Chrome(options=opts,executable_path = path)
@@ -37,6 +44,14 @@ def get_soup(url):
     return soup
 
 def get_book_info(url):
+    """ Retrieve the individual book information
+
+    Args:
+        url (string): hyperlink of individual book to be scrapped
+
+    Returns:
+        dictionary: contains book information pulled by beautiful soup
+    """
     
     print("Book info fn:", url)
 
@@ -50,44 +65,19 @@ def get_book_info(url):
         'image': soup.find('img', {'class': 'none lazyautosizes ls-is-cached lazyloaded'})['src']
 	    # url = 'https://www.bookxcessonline.com/collections/malay-workbooks/products/kunci-a-tahun-6-9789674555542'
 
-        #     url = 'https://www.bookurve.com/book/9789672328001/di-situ-langit-dijunjung/'
-        #    'title': soup.find('h1', {'class': 'product_name'}).text,
-        #     'author': soup.find('a', {'class': 'author_search'}).text,
-        #     'image': soup.find('img', {'class': 'au-target'})['src']
-
-        # 'title': soup.find('h1', {'class': 'book-title'}).text,
-        # 'author': soup.find('a', {'class': 'book-meta-author-name'}).text.replace('\n', ''),
-        # 'ISBN':  soup.find('div', {'id': 'sel-buy-box'}).find('span', {'class': 'buy-box--isbn'}).text[6:],
-        # 'summary': soup.find('div', {'class': 'book-summary'}).text.replace('\n', ''),
-        # 'image': soup.find('img', {'class': 'book-image'})['src']
     }
     
 
     
     return data
 
-import tensorflow_hub as hub
-import tensorflow_text
-
-# get data about most popular books on the website
-full_data = []
-
-# page='https://bookxcessonline.myshopify.com/collections/malay-childrens-books?page=3'
-category_list = [
-    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=1',
-    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=2',
-    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=3',
-    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=4',
-    'https://www.bookxcessonline.com/collections/malay-fiction?page=1',
-    'https://www.bookxcessonline.com/collections/malay-fiction?page=2',
-    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=1',
-    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=2',
-    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=3',
-    'https://www.bookxcessonline.com/collections/malay-spirituality-and-religion?page=1',
-    'https://www.bookxcessonline.com/collections/malay-spirituality-and-religion?page=2'
-    ]
-
 def get_links_in_page(category_list, full_data):
+    """ Retrieve the hyperlink in the page containing individual book links
+
+    Args:
+        category_list (list): list of url, preferably search result page to get links of individual books
+        full_data (list): full data containing book metadata
+    """
     for page in category_list:
         print("Link fn:", page)
 
@@ -100,10 +90,6 @@ def get_links_in_page(category_list, full_data):
                 full_data.append(get_book_info(url))
             except Exception as e:
                 print(e)
-
-
-    # what = soup.find_all('a', {'class': 'hidden-product-link'})[1]
-    # what['href']
 
     # remove books appearing more than once
     book_data_no_duplicates = []
@@ -120,9 +106,6 @@ def get_links_in_page(category_list, full_data):
     # add vectors to the data
     for element in full_data:
         element['vector'] = embed(element['summary'])[0]
-
-    import numpy as np
-    from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 
     vectors = [item['vector'] for item in full_data]
     X = np.array(vectors)
@@ -152,6 +135,26 @@ def get_links_in_page(category_list, full_data):
     with open('books.pkl', 'wb') as f:
         pickle.dump(full_data, f)
 
+# url = 'https://www.bookxcessonline.com/collections/malay-workbooks/products/kunci-a-tahun-6-9789674555542'
+
+# get data about most popular books on the website
+full_data = []
+
+# page='https://bookxcessonline.myshopify.com/collections/malay-childrens-books?page=3'
+category_list = [
+    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=1',
+    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=2',
+    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=3',
+    'https://www.bookxcessonline.com/collections/malay-childrens-books?page=4',
+    'https://www.bookxcessonline.com/collections/malay-fiction?page=1',
+    'https://www.bookxcessonline.com/collections/malay-fiction?page=2',
+    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=1',
+    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=2',
+    'https://www.bookxcessonline.com/collections/malay-non-fiction?page=3',
+    'https://www.bookxcessonline.com/collections/malay-spirituality-and-religion?page=1',
+    'https://www.bookxcessonline.com/collections/malay-spirituality-and-religion?page=2'
+    ]
+    
+# get_links_in_page(category_list, full_data) # 
 # get_soup(url)
 # get_book_info(url)
-get_links_in_page(category_list, full_data)
